@@ -3,10 +3,9 @@
  */
 package com.michael.adkins.devices.management.entity;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
@@ -18,32 +17,39 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class DeviceDao {
-//	private static List<Device> devices = new ArrayList<Device>();
-	private static Set<Device> deviceSet = new HashSet<Device>();
+	private static Map<Integer, Device> deviceMap = new HashMap<>();
 	private static Random random = new Random();
-	private static Set<Integer> keySet = new LinkedHashSet<Integer>();
+
 //	static {
-//		//TODO initialize devices
+//		Device[] deviceArr = {
+//			    new Device("12-1222", "3455670-22222", "1-00022221")
+//			};
+//		deviceMap = IntStream.range(0, deviceArr.length/2).map(i -> i*2).collect(HashMap::new, (newMap,index) -> newMap.put(index, deviceArr[index]),Map::putAll);
+//		
 //	}
 	
 	public List<Device> findAll() {
-		return List.copyOf(deviceSet);
+		return List.copyOf(deviceMap.values());
 	}
 	
 	public Device save(Device device) {
 		if(device.getId() == null) {
 			Integer key = createId();
-			keySet.add(key);
-			device.setId(null);
+			device.setId(key);
 		}
-		return (deviceSet.add(device) ? device : null);
-		
+		deviceMap.put(device.getId(), device);
+		return device;
 	}
 	
 	private static Integer createId() {
 		Integer key = null;
+		Set<Integer> keySet = deviceMap.keySet();
 		do {
-			key = random.nextInt(deviceSet.size());
+			try {
+				key = random.nextInt(keySet.size());
+			} catch (IllegalArgumentException e) {
+				key = 0;
+			}
 		} while(keySet.contains(key) && keySet.size() > 0);
 		return key;
 	}
